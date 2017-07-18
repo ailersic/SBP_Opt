@@ -1,10 +1,13 @@
 function [H, Q, d] = acc_eqn(n)
     d = sym('d', [floor((n-2)/2), 1]);
-    for i=2:floor((n-2)/2)
-        assume(d(i-1) <= d(i));
+    
+    for i=1:floor((n-2)/2)
+        assumeAlso(d(i) > 0);
+        assumeAlso(d(i) < 0.5);
+        if i > 1
+            assumeAlso(d(i-1) <= d(i));
+        end
     end
-    assume(d(1) >= 0)
-    assume(d(end) <= 0.5);
     
     % x is on domain [0,1]
     if mod(n, 2) == 1
