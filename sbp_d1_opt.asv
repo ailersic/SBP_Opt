@@ -1,0 +1,51 @@
+%% Define symbolic variables
+
+n = 6;
+m = 3; % number of sampled d points
+
+disp([num2str((n-1-floor((n-2)/2))*n), ' equations and ', num2str(ceil(n/2) + ceil(n/2)*floor(n/2)), ' unknowns'])
+disp('Note: Not all equations are independent')
+
+d = linspace(1/(2*(floor((n-2)/2)+1)), 1/2 - 1/(2*(floor((n-2)/2)+1)), floor((n-2)/2)).';
+
+% dsmp = zeros(m, floor((n-2)/2));
+% for i=1:size(dsmp,2)
+%     dsmp(:,i) = linspace(1/(2*(m+1)), 1/2 - 1/(2*(m+1)), m).';
+% end
+% 
+% asmp = zeros(m, 1);
+% for i=2:size(dsmp,2)
+%     tsmp = asmp;
+%     for j=1:m-1
+%         asmp = cat(i, asmp, tsmp);
+%     end
+% end
+% 
+% d = zeros(size(dsmp,2), 1);
+% jcount = 0;
+% jfinal = base2dec(repmat(num2str(m-1), 1, length(d)), m);
+% 
+% while jcount <= jfinal
+%     jindices = [repmat('0', 1, length(d) - length(dec2base(jcount, m))), dec2base(jcount, m)];
+%     for i=1:length(jindices)
+%         d(i) = dsmp(str2num(jindices(i))+1,i);
+%     end
+%     jcount = jcount + 1;
+%     
+%     skipDcombo = false;
+%     for i=2:length(jindices)
+%         if d(i) < d(i-1)
+%             skipDcombo = true;
+%         end
+%     end
+%     if skipDcombo
+%         continue;
+%     end
+%     
+%     disp(d.');
+%     %disp(acc_eqn(n, d))
+% end
+
+%[H, Q] = acc_eqn(n, d);
+
+%disp(inv(H)*Q)

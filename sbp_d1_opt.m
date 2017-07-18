@@ -1,4 +1,6 @@
 %% Define symbolic variables
+clear all
+clc
 
 n = 6;
 p = n - 1;
@@ -6,6 +8,12 @@ p = n - 1;
 d = sym('d', [floor((n-2)/2), 1]);
 h = sym('h', [ceil(n/2), 1]);
 q = sym('q', [ceil(n/2)*floor(n/2), 1]);
+
+for i=2:floor((n-2)/2)
+    assume(d(i-1) <= d(i));
+end
+assume(d(1) >= 0)
+assume(d(end) <= 0.5);
 
 disp([num2str(p*n), ' equations and ', num2str(floor((n-2)/2) + ceil(n/2) + ceil(n/2)*floor(n/2)), ' unknowns'])
 
@@ -42,10 +50,14 @@ end
 
 %% Solve accuracy equations
 
-eqns = [];
+eqns = sym(zeros(p*length(x), 1));
 
 for j=1:p
-    eqns = [eqns; Q*x.^j == j*H*x.^(j-1)];
+    eqns((j-1)*length(x)+1:j*length(x)) = (Q*x.^j == j*H*x.^(j-1));
 end
 
-sol = solve(eqns);
+sol = vpasolve(eqns);
+
+H = subs(H, sol);
+Q = subs(Q, sol);
+x = subs(x, sol);
