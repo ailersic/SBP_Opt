@@ -1,14 +1,18 @@
 clear all
 clc
 
-n = 5;
-p = 3;
+n = 6;                  % Number of nodes
+p = ceil(n/2);          % Degree of accuracy equations
+m = 4;                  % Number of each starting delta in global search
+objfunc = 'specrad';    % Objective function, can be 'specrad', 'acceqn'
 
 h = sym('h', [ceil(n/2), 1]);
 q = sym('q', [ceil(n/2)*floor(n/2), 1]);
 d = sym('d', [floor((n-2)/2), 1]);
 
 %% Generate matrices and vectors
+
+disp('Generating symbolic H, Q matrices')
 
 H = sym(eye(n));
 
@@ -41,6 +45,8 @@ end
 
 %% Solve accuracy equations
 
+disp(['Solving accuracy equations to degree ', num2str(p)])
+
 At = sym(zeros(n*p, length(h) + length(q)));
 bt = sym(zeros(n*p, 1));
 
@@ -66,26 +72,31 @@ D1 = inv(Hsol)*Qsol;
 
 %% Minimize objective function
 
-A = -inv(Hsol)*(Qsol + [1; zeros(n-1, 1)]*[1, zeros(1, n-1)]);
-err = @(d_) max(abs(eig(double(subs(A, d, d_))))); % min spectral radius
-
-%e = D1*x.^(p+1) - (p+1)*x.^p;
-%err = @(d_) double(subs(e'*Hsol*e, d, d_)); % min error in deg p+1 acc eqn
+if strcmp(objfunc, 'specrad')
+    A = -inv(Hsol)*(Qsol + [1; zeros(n-1, 1)]*[1, zeros(1, n-1)]);
+    err = @(d_) max(abs(eig(double(subs(A, d, d_)))));
+elseif strcmp(objfunc, 'acceqn')
+    e = D1*x.^(p+1) - (p+1)*x.^p;
+    err = @(d_) double(subs(e'*Hsol*e, d, d_));
+else
+    disp('ERROR: No objective function')
+    return
+end
 
 options = optimoptions(@fmincon, 'Algorithm', 'interior-point', ... 
  'Display', 'final', 'OptimalityTolerance', 1e-8, ...
  'SpecifyObjectiveGradient', false, 'CheckGradients', false, ... 
  'stepTolerance', 1e-14', 'MaxFunctionEvaluations', 100000, ... 
  'MaxIterations', 500, 'ScaleProblem', 'obj-and-constr', ...
- 'ConstraintTolerance', 0);
+ 'ConstraintTolerance', 0, 'Display', 'off');
 
 dsolvec = [];
 errvvec = [];
 
-disp('Started global search')
-
-m = 10;
 d0 = gen_d0(m, 1, length(d));
+
+disp(['Starting global search with ', num2str(length(d0)), ...
+      ' initial guesses']);
 
 for i=1:size(d0, 2)
     [dsol, errv] = fmincon(err, d0(:,i), [], [], [], [], [], [], ...
@@ -96,3 +107,6 @@ end
 
 [errv, i] = min(errvvec);
 dsol = dsolvec(:,i);
+
+disp(['Final offset(s): [', num2str(dsol'), '] with error: ', ...
+      num2str(errv)])
