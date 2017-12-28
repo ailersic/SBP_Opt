@@ -1,7 +1,7 @@
 clear all
 clc
 
-n = 6;                  % Number of nodes
+n = 5;                  % Number of nodes
 p = ceil(n/2);          % Degree of accuracy equations
 m = 4;                  % Number of each starting delta in global search
 objfunc = 'specrad';    % Objective function, can be 'specrad', 'acceqn'
@@ -73,7 +73,7 @@ D1 = inv(Hsol)*Qsol;
 %% Minimize objective function
 
 if strcmp(objfunc, 'specrad')
-    A = -inv(Hsol)*(Qsol + [1; zeros(n-1, 1)]*[1, zeros(1, n-1)]);
+    A = inv(Hsol)*(Qsol + diag([1; zeros(n-1, 1)]));
     err = @(d_) max(abs(eig(double(subs(A, d, d_)))));
 elseif strcmp(objfunc, 'acceqn')
     e = D1*x.^(p+1) - (p+1)*x.^p;
