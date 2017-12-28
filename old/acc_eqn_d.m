@@ -30,13 +30,17 @@ function [H, Q] = acc_eqn_d(n, d)
         end
     end
 
-    eqns = sym(zeros(p*length(x), 1));
+    eqns = sym(zeros((n-2)*length(x), 1));
+    
+    D = inv(H)*Q
 
-    for j=1:n-1-floor((n-2)/2)
+    for j=1:n-2
         eqns((j-1)*length(x)+1:j*length(x)) = (Q*x.^j == j*H*x.^(j-1));
     end
     
-    sol = solve(eqns);
+    sol = vpasolve(eqns);
+    subs(h, sol)
+    subs(q, sol)
 
     H = subs(H, sol);
     Q = subs(Q, sol);

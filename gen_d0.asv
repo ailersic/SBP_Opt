@@ -1,0 +1,13 @@
+function d0 = gen_d0(m, i, nd)
+    d0 = zeros(nd, 1);
+    for j=m-i+1:m
+        i1 = j/(m+1);
+        if nd >= 1
+            in = gen_d0(m, i-j, nd-1);
+        else
+            
+        i1*ones(1, size(in, 2))
+        in
+        d0 = [d0, [i1*ones(1, size(in, 2)); in]];
+    end
+end

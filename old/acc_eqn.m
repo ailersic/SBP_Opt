@@ -1,6 +1,14 @@
 function [H, Q, d] = acc_eqn(n)
     d = sym('d', [floor((n-2)/2), 1]);
     
+    for i=1:floor((n-2)/2)
+        assumeAlso(d(i) > 0);
+        assumeAlso(d(i) < 0.5);
+        if i > 1
+            assumeAlso(d(i-1) <= d(i));
+        end
+    end
+    
     % x is on domain [0,1]
     if mod(n, 2) == 1
         x = [0; d; 0.5; 1.-flipud(d); 1];
@@ -32,15 +40,15 @@ function [H, Q, d] = acc_eqn(n)
         end
     end
 
-    eqns = [];
+    eqns = sym(zeros((n-1)*length(x), 1));
 
-    for j=1:n-1-floor((n-2)/2);
-        eqns = [eqns; Q*x.^j == j*H*x.^(j-1)];
+    for j=1:n-1
+        eqns((j-1)*length(x)+1:j*length(x)) = (Q*x.^j == j*H*x.^(j-1));
     end
 
-    sol = vpasolve(eqns);
+    sol = solve(eqns);
 
     H = subs(H, sol);
     Q = subs(Q, sol);
+    d = subs(d, sol);
 end
-
