@@ -1,9 +1,9 @@
-function d0 = gen_d0(m, i, nd)
+function d0 = init_deltas(m, i, nd)
     d0 = [];
     for j=i:m-nd+1
         i1 = j/(m+1);
         if nd > 1
-            in = gen_d0(m, j+1, nd-1);
+            in = init_deltas(m, j+1, nd-1);
         else
             in = [];
         end
