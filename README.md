@@ -3,9 +3,8 @@
 
 [Github Repo](https://github.com/ailersic/SBP_Opt)
 
-SBP_Opt is a small Matlab program that solves for derivative operators of the highest possible order while satisfying the Summation By Parts (SBP) property.
+SBP_Opt is a small Matlab program that solves for derivative operators that satisfy the Summation By Parts (SBP) property and optimizes them to minimize truncation error, spectral radius, or a weighted objective funcction.
 
-Authors:
+Author:
 
     Andrew Ilersich <andrew.ilersich@mail.utoronto.ca>
-	Chris Kousinioris <chrisdkou1@gmail.com>

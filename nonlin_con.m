@@ -1,4 +1,4 @@
-function [c, ceq] = nonlin_con(H, d, d_)
+function [c, ceq] = nonlin_con(H, d, d_, ceqf, desvar)
     c = [-subs(diag(H), d, d_);
          -d_
           d_ - ones(length(d_), 1)];
@@ -6,5 +6,9 @@ function [c, ceq] = nonlin_con(H, d, d_)
         c = [c; d_(i) - d_(i+1)];
     end
     c = double(c);
-    ceq = [];
+    if isempty(ceqf)
+        ceq = [];
+    else
+        ceq = ceqf(d_) - desvar;
+    end
 end

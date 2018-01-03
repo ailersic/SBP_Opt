@@ -1,9 +1,13 @@
-function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt)
+function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, desvar)
 %% Minimize objective function for given D1 as a function of deltas
     n = length(D1);
     p = ceil(n/2); % Max degree of accuracy equations to be solved
     
     d = sym('d', [floor((n-2)/2), 1]);
+    
+    % These warnings get really annoying
+    warning('off', 'MATLAB:singularMatrix');
+    warning('off', 'MATLAB:nearlySingularMatrix');
 
     % x is on domain [-1,1]
     if mod(n, 2) == 1
@@ -20,13 +24,22 @@ function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt)
     % I know taking the absolute value of Hsol should be unnecessary, but
     % floating point error is a bastard. I enforce that each element of
     % Hsol is > 0 in nonlin_con anyway.
-
+    
     if strcmp(obj, 'specrad')
         err = @(d_) specrad(d_);
+        ceqf = [];
     elseif strcmp(obj, 'acceqn')
         err = @(d_) acceqn(d_);
+        ceqf = [];
+    elseif strcmp(obj, 'desspecrad')
+        err = @(d_) acceqn(d_);
+        ceqf = @(d_) specrad(d_);
+    elseif strcmp(obj, 'desacceqn')
+        err = @(d_) specrad(d_);
+        ceqf = @(d_) acceqn(d_);
     elseif strcmp(obj, 'weight')
         err = @(d_) srwgt*specrad(d_) + aewgt*acceqn(d_);
+        ceqf = [];
     else
         disp('ERROR: No objective function')
         return
@@ -52,7 +65,7 @@ function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt)
     % Try each set of offsets
     for i=1:size(d0, 2)
         [dsol, errv] = fmincon(err, d0(:,i), [], [], [], [], [], [], ...
-                               @(d_) nonlin_con(H, d, d_), options);
+                       @(d_) nonlin_con(H, d, d_, ceqf, desvar), options);
         dsolvec = [dsolvec, dsol];
         errvvec = [errvvec, errv];
         disp(['Global search: ', num2str(100*i/size(d0, 2)), '%'])
