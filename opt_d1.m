@@ -1,4 +1,4 @@
-function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, desvar)
+function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, desvar, id)
 %% Minimize objective function for given D1 as a function of deltas
     n = length(D1);
     p = ceil(n/2); % Max degree of accuracy equations to be solved
@@ -68,7 +68,8 @@ function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, de
                        @(d_) nonlin_con(H, d, d_, ceqf, desvar), options);
         dsolvec = [dsolvec, dsol];
         errvvec = [errvvec, errv];
-        disp(['Global search: ', num2str(100*i/size(d0, 2)), '%'])
+        disp(['Global search in process ', num2str(id), ': ', ...
+              num2str(100*i/size(d0, 2)), '%'])
     end
 
     % Choose the best solution and present it

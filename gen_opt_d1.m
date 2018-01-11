@@ -1,7 +1,7 @@
 clear all
 clc
 
-n = 5;              % Number of nodes
+n = 6;              % Number of nodes
 m = 6;              % Number of each starting delta in global search
 obj = 'desacceqn';  % Objective function:
                     %  'acceqn':     minimize H norm truncation error for
@@ -20,17 +20,12 @@ wgthigh = 1.0;      % Upper limit for spread of weights
 wgtincr = 0.02;     % Increment in spread of weights
 
 desvarlow = 0.0;    % Lower limit for spread of desired variable value
-desvarhigh = 1.1;   % Upper limit for spread of desired variable value
-desvarincr = 0.1;   % Increment in spread of desired variable value
+desvarhigh = 1.5;   % Upper limit for spread of desired variable value
+desvarincr = 0.02;  % Increment in spread of desired variable value
 
 srwgt = wgtlow:wgtincr:wgthigh;
 aewgt = 1 - srwgt;
 desvar = desvarlow:desvarincr:desvarhigh;
-
-dsols = zeros(floor((n-2)/2), length(srwgt));
-srsols = zeros(1, length(srwgt));
-aesols = zeros(1, length(srwgt));
-D1sols = zeros(n, n, length(srwgt));
 
 warning('off', 'symbolic:mldivide:RankDeficientSystem');
 
@@ -51,11 +46,22 @@ else
     k = 1;
 end
 
+dsols = zeros(floor((n-2)/2), k);
+srsols = zeros(1, k);
+aesols = zeros(1, k);
+D1sols = zeros(n, n, k);
+
 % Iterate over weight or desired variable, store results in vectors
 parfor i = 1:k
+    thread = getCurrentTask();
+    id = thread.ID;
+    
+    disp(['Process ', num2str(id), ' started iteration i/k = ', ...
+          num2str(i), '/', num2str(k)])
     [dsols(:, i), srsols(i), aesols(i), D1sols(:, :, i)] = ...
-        opt_d1(H, Q, D1, m, obj, srwgt(i), aewgt(i), desvar(i));
-    disp(['Optimization loop: ', num2str(100*i/k), '%'])
+        opt_d1(H, Q, D1, m, obj, srwgt(i), aewgt(i), desvar(i), id);
+    disp(['Process ', num2str(id), ' finished iteration i/k = ', ...
+          num2str(i), '/', num2str(k)])
 end
 
 % Pareto plot of truncation error over spectral radius
