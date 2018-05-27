@@ -1,10 +1,6 @@
 function [Hsol, Qsol, D1] = gen_d1(n)
 %% Generate an SBP first derivative operator
     % n = number of nodes
-    % m = number of each starting offset in global search
-    % obj = objective function, can be 'specrad', 'acceqn', or 'weight'
-    % srwgt = coefficient for specrad function if obj is 'weight'
-    % aewgt = coefficient for acceqn function if obj is 'weight'
 
     disp(['Finding SBP operator for n = ', num2str(n)])
 

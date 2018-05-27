@@ -19,8 +19,12 @@ function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, de
     A = inv(H)*(Q + diag([1; zeros(n-1, 1)]));
     specrad = @(d_) max(abs(eig(double(subs(A, d, d_)))));
 
-    e = D1*x.^(p+1) - (p+1)*x.^p;
-    acceqn = @(d_) double(subs(e'*abs(H)*e, d, d_));
+    e1 = D1*x.^(p+1) - (p+1)*x.^p;
+    acceqn = @(d_) double(subs(e1'*abs(H)*e1, d, d_));
+    
+    e2 = D1*x.^(p+2) - (p+2)*x.^(p+1);
+    e12 = e1 + e2;
+    acceqn2 = @(d_) double(subs(e12'*abs(H)*e12, d, d_));
     % I know taking the absolute value of Hsol should be unnecessary, but
     % floating point error is a bastard. I enforce that each element of
     % Hsol is > 0 in nonlin_con anyway.
@@ -31,14 +35,26 @@ function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, de
     elseif strcmp(obj, 'acceqn')
         err = @(d_) acceqn(d_);
         ceqf = [];
+    elseif strcmp(obj, 'acceqn2')
+        err = @(d_) acceqn2(d_);
+        ceqf = [];
     elseif strcmp(obj, 'desspecrad')
         err = @(d_) acceqn(d_);
+        ceqf = @(d_) specrad(d_);
+    elseif strcmp(obj, 'desspecrad2')
+        err = @(d_) acceqn2(d_);
         ceqf = @(d_) specrad(d_);
     elseif strcmp(obj, 'desacceqn')
         err = @(d_) specrad(d_);
         ceqf = @(d_) acceqn(d_);
+    elseif strcmp(obj, 'desacceqn2')
+        err = @(d_) specrad(d_);
+        ceqf = @(d_) acceqn2(d_);
     elseif strcmp(obj, 'weight')
         err = @(d_) srwgt*specrad(d_) + aewgt*acceqn(d_);
+        ceqf = [];
+    elseif strcmp(obj, 'weight2')
+        err = @(d_) srwgt*specrad(d_) + aewgt*acceqn2(d_);
         ceqf = [];
     else
         disp('ERROR: No objective function')
@@ -76,7 +92,11 @@ function [dsol, srsol, aesol, D1sol] = opt_d1(H, Q, D1, m, obj, srwgt, aewgt, de
     [errv, i] = min(errvvec);
     dsol = dsolvec(:,i);
     srsol = specrad(dsol);
-    aesol = acceqn(dsol);
+    if strcmp(obj(end), '2')
+        aesol = acceqn2(dsol);
+    else
+        aesol = acceqn(dsol);
+    end
     D1sol = double(subs(D1, d, dsol));
 
     disp(['Final offset(s): [', num2str(dsol'), ...
