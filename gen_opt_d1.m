@@ -1,7 +1,7 @@
 clear all
 clc
 
-n = 5;              % Number of nodes
+n = 6;              % Number of nodes
 m = 6;              % Number of each starting delta in global search
 obj = 'desacceqn2';  % Objective function:
                     %  'acceqn':     minimize H norm truncation error for
@@ -25,11 +25,11 @@ obj = 'desacceqn2';  % Objective function:
 
 wgtlow = 0.0;       % Lower limit for spread of weights
 wgthigh = 1.0;      % Upper limit for spread of weights
-wgtincr = 0.5;     % Increment in spread of weights
+wgtincr = 0.05;     % Increment in spread of weights
 
 desvarlow = 0.6503;    % Lower limit for spread of desired variable value
-desvarhigh = 1.8654*20;   % Upper limit for spread of desired variable value
-desvarincr = (1.8654*20-0.6503)/100;  % Increment in spread of desired variable value
+desvarhigh = 1.97;   % Upper limit for spread of desired variable value
+desvarincr = 0.065985;  % Increment in spread of desired variable value
 
 srwgt = wgtlow:wgtincr:wgthigh;
 aewgt = 1 - srwgt;
@@ -61,13 +61,9 @@ aesols = zeros(1, k);
 D1sols = zeros(n, n, k);
 
 % Iterate over weight or desired variable, store results in vectors
-% I would use the parallel toolbox, but it crashes for whatever reason
-%parfor i = 1:k
-%    thread = getCurrentTask();
-%    id = thread.ID;
-for i = 1:k
-    thread = 0;
-    id = 0;
+parfor i = 1:k
+    thread = getCurrentTask();
+    id = thread.ID;
     
     disp(['Process ', num2str(id), ' started iteration i/k = ', ...
           num2str(i), '/', num2str(k)])
@@ -76,6 +72,9 @@ for i = 1:k
     disp(['Process ', num2str(id), ' finished iteration i/k = ', ...
           num2str(i), '/', num2str(k)])
 end
+
+np = length(dsols);
+xsols = [-ones(1, np); dsols-ones(1, np); zeros(1, np); ones(1, np)-flipud(dsols); ones(1, np)];
 
 % Pareto plot of truncation error over spectral radius
 figure
